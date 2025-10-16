@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertReadingSchema, insertChartSchema } from "@shared/schema";
+import { neo4jService } from "./neo4j";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware - from Replit Auth blueprint
@@ -166,20 +167,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Neo4j graph endpoints (placeholder for next task)
+  // Neo4j graph endpoints
   app.get('/api/graph/node/:name', async (req, res) => {
-    // TODO: Implement Neo4j node exploration
-    res.json({ message: "Neo4j integration coming soon" });
+    try {
+      const { name } = req.params;
+      const result = await neo4jService.getNode(decodeURIComponent(name));
+      
+      if (!result) {
+        return res.status(404).json({ message: "Node not found" });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching node:", error);
+      res.status(500).json({ message: "Failed to fetch node from graph" });
+    }
   });
 
   app.get('/api/graph/path', async (req, res) => {
-    // TODO: Implement Neo4j path finding
-    res.json({ message: "Neo4j integration coming soon" });
+    try {
+      const { from, to, maxLength } = req.query;
+      
+      if (!from || !to) {
+        return res.status(400).json({ message: "Both 'from' and 'to' parameters are required" });
+      }
+      
+      const result = await neo4jService.findPath(
+        from as string,
+        to as string,
+        maxLength ? parseInt(maxLength as string) : 5
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error finding path:", error);
+      res.status(500).json({ message: "Failed to find path in graph" });
+    }
   });
 
   app.post('/api/graph/search', async (req, res) => {
-    // TODO: Implement Neo4j pattern search
-    res.json({ message: "Neo4j integration coming soon" });
+    try {
+      const pattern = req.body;
+      const result = await neo4jService.searchPattern(pattern);
+      res.json(result);
+    } catch (error) {
+      console.error("Error searching pattern:", error);
+      res.status(500).json({ message: "Failed to search pattern in graph" });
+    }
+  });
+  
+  app.get('/api/graph/stats', async (req, res) => {
+    try {
+      const stats = await neo4jService.getGraphStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting graph stats:", error);
+      res.status(500).json({ message: "Failed to get graph statistics" });
+    }
   });
 
   // Swiss Ephemeris endpoints (placeholder for later task)
