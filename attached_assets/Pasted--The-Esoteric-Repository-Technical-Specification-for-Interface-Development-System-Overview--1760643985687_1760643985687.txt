@@ -1,0 +1,360 @@
+# The Esoteric Repository: Technical Specification for Interface Development
+
+## System Overview
+
+**Backend**: Neo4j graph database at `repository.robin-alligator.ts.net:7687`  
+**Purpose**: Interconnected symbolic correspondence graph for tarot, astrology, Kabbalah, Futhark, typology, and temporal systems  
+**Architecture**: Read-heavy graph with bidirectional correspondence traversal
+
+-----
+
+## Complete Data Domain Structure
+
+### 1. Tarot Domain
+
+**78 total cards** with three archetypal layers:
+
+**Node Labels:**
+
+- `TarotCard` (base label for all cards)
+- `MajorArcana` (22 cards) - Hermetic principles
+- `MajesticArcana` (16 Court + 4 Aces) - MBTI/personality archetypes
+- `MinorArcana` (36 numbered cards) - Enneagram + elemental progressions
+
+**Key Properties:**
+
+```javascript
+{
+  name: "The Magician", // unique identifier
+  one_word: "Manifestation",
+  keywords: "willpower, resourcefulness, power",
+  stage_of_path: "conscious awareness of tools",
+  progression: "journey through the suit narrative",
+  saga: "suit-specific story arc"
+}
+```
+
+**Tarot Relationships:**
+
+- `ELEMENTAL_ASSOCIATION` → Element
+- `NUMEROLOGICAL_ASSOCIATION` → Number (1-10)
+- `BELONGS_TO_SUIT` → Suit (Wands/Chalices/Swords/Pentacles)
+- `CORRESPONDS_TO_LETTER` → HebrewLetter (with `.context` property)
+- `TRAVERSES_PATH` → TreeOfLifePath (with `.context` property)
+- `EMBODIES_TYPE` → MBTIType (with `.context` property)
+- `PRIMARY_FUNCTION` / `AUXILIARY` / `TERTIARY` / `INFERIOR` → CognitiveFunction
+- `EXPRESSES_TYPE` → EnneagramType (with `.context` property)
+- `ASSOCIATED_WITH_SIGN` → ZodiacSign
+- `DOMINANT_ASTROLOGICAL_ASSOCIATION` → ZodiacSign (first/primary)
+- `RULED_BY_PLANET` → HeavenlyBody
+- `CELEBRATES_SABBAT` → Sabbat
+
+### 2. Astrology Domain
+
+**Complete traditional + Hellenistic astrology**
+
+**Node Labels:**
+
+- `ZodiacSign` (12 signs)
+- `Element` (Fire, Earth, Air, Water)
+- `Modality` (Cardinal, Fixed, Mutable)
+- `House` (12 houses, identified by `.number`)
+- `HeavenlyBody` (Sun, Moon, planets, luminaries)
+- `Aspect` (conjunction, opposition, trine, square, sextile, etc.)
+- `EssentialDignity` (domicile, exaltation, detriment, fall)
+- `Decan` (36 subdivisions, 10° each)
+- `Dodecatemoria` (12 micro-divisions per sign)
+- `FixedStar` (major fixed stars)
+
+**Key Properties:**
+
+```javascript
+// ZodiacSign example
+{
+  name: "Aries",
+  symbol: "♈",
+  ruling_planet: "Mars",
+  element: "Fire",
+  modality: "Cardinal",
+  dates: "March 21 - April 19",
+  exaltation: "Sun",
+  detriment: "Venus",
+  fall: "Saturn",
+  keywords: "initiative, courage, pioneering"
+}
+```
+
+**Astrology Relationships:**
+
+- `HAS_ELEMENT` → Element
+- `HAS_MODALITY` → Modality
+- `RULED_BY` → HeavenlyBody
+- `TRADITIONALLY_RULES` → House
+- `DECAN_OF` → ZodiacSign
+- `CORRESPONDS_TO_CARD` → TarotCard (decan-to-minor-arcana)
+- `ASSOCIATED_WITH_SIGN` → ZodiacSign
+
+### 3. General Domain
+
+**Cross-cutting symbolic systems**
+
+**Node Labels:**
+
+- `Element` (shared with other domains)
+- `Chakra` (7 energy centers)
+- `DayOfWeek` (7 days with esoteric correspondences)
+- `MonthOfYear` (12 months with seasonal meanings)
+- `Pantheon` (Greek, Norse, Egyptian, etc.)
+- `Archangel` (celestial hierarchies)
+
+**Key Properties:**
+
+```javascript
+// Chakra example
+{
+  name: "Solar Plexus",
+  sanskrit_name: "Manipura",
+  location: "above navel",
+  color: "yellow",
+  mantra: "RAM",
+  chakra_summary: "personal power and transformation",
+  esoteric_associations: "Mars, Sun, fire element"
+}
+```
+
+**General Relationships:**
+
+- `ASSOCIATED_WITH_ELEMENT` → Element
+- `INFLUENCED_BY_PLANET` → HeavenlyBody (days/chakras)
+- `CORRESPONDS_TO_CHAKRA` → Chakra (months/planets)
+
+### 4. Kabbalah Domain
+
+**Tree of Life structure**
+
+**Node Labels:**
+
+- `Sephirah` (10 emanations)
+- `TreeOfLifePath` (22 paths connecting sephiroth)
+- `HebrewLetter` (22 letters, each to a Major Arcana)
+
+**Key Properties:**
+
+```javascript
+// Sephirah example
+{
+  name: "Tiphareth",
+  number: 6,
+  meaning: "Beauty/Harmony",
+  associated_body: "Sun",
+  divine_name: "YHVH Eloah va-Daath"
+}
+```
+
+**Kabbalah Relationships:**
+
+- `TRAVERSES_PATH` → TreeOfLifePath (Major Arcana)
+- `CORRESPONDS_TO_LETTER` → HebrewLetter (Major Arcana)
+- `CONNECTS_TO` → Sephirah (paths between sephiroth)
+
+### 5. Futhark Domain
+
+**Elder Futhark runic system**
+
+**Node Labels:**
+
+- `Rune` (24 runes)
+- `Aett` (3 groups of 8)
+
+**Key Properties:**
+
+```javascript
+// Rune example
+{
+  name: "Fehu",
+  unicode: "ᚠ",
+  meaning: "cattle, wealth, abundance",
+  aett: "Freyr's Aett",
+  element: "Fire",
+  keywords: "prosperity, new beginnings"
+}
+```
+
+**Futhark Relationships:**
+
+- `BELONGS_TO_AETT` → Aett
+- `ELEMENTAL_CORRESPONDENCE` → Element
+- `RESONATES_WITH` → TarotCard (optional cross-system links)
+
+### 6. Reference Nodes
+
+**Shared correspondence anchors:**
+
+- `Number` (1-10, identified by `.value`)
+- `Suit` (4 tarot suits)
+- `MBTIType` (16 types)
+- `CognitiveFunction` (Ni, Ne, Si, Se, Ti, Te, Fi, Fe)
+- `EnneagramType` (9 types)
+- `Sabbat` (8 Wheel of Year festivals)
+
+-----
+
+## Interface Requirements
+
+### Core Functionality Needed
+
+#### 1. **Tarot Reading Input & Storage**
+
+**User Flow:**
+
+1. Select spread type (Celtic Cross, 3-card, custom positions)
+1. For each position: select card + orientation (upright/reversed)
+1. Add interpretation notes per card
+1. Add overall reading synthesis
+1. Tag with: date, querent initials (optional), question/context, reader notes
+
+**Data Model**
+see attached diagram 
+
+#### 2. **Astral Chart Input & Storage**
+
+**User Flow:**
+
+1. Input birth data: date, time, location (or lat/long)
+1. System calculates planetary positions (or manual entry)
+1. Store house cusps, aspects, key placements
+1. Add interpretation notes per placement
+1. Tag chart: name, chart type (natal/transit/synastry), notes
+
+**Data Model:**
+see attached diagram
+
+#### 3. **Reading/Chart Access & Library**
+
+**Views Needed:**
+
+- List view: chronological, filterable by type/date/tags
+- Detail view: full reading/chart with all positions/placements
+- Search: by card, planet, question keywords, date range
+- Related readings: "Show other readings with The Tower in outcome position"
+
+**Queries:**
+
+```cypher
+// Get all readings containing a specific card
+MATCH (r:Reading)-[pos:CARD_POSITION]->(c:TarotCard {name: "The Tower"})
+RETURN r, pos.position, pos.interpretation
+ORDER BY r.timestamp DESC
+
+// Get all charts with Sun in Leo
+MATCH (ch:AstralChart)-[:HAS_PLACEMENT]->(p:Placement)-[:IN_SIGN]->(z:ZodiacSign {name: "Leo"})
+WHERE p.body = "Sun"
+RETURN ch, p
+```
+
+#### 4. **Graph Exploration Interface**
+
+**Three exploration modes:**
+
+**A. Node Explorer**
+
+- Start at any node (card, planet, sign, rune, etc.)
+- Show immediate connections with relationship labels
+- Click to expand/traverse
+- Filter by relationship type
+- Visual: force-directed graph or radial tree
+
+**B. Path Finder**
+
+- Input: two nodes (e.g., "The Hermit" and "Virgo")
+- Output: all paths between them up to depth N
+- Show relationship chains with context properties
+- Highlight shortest/most meaningful paths
+
+**C. Pattern Search**
+
+- Query builder for complex patterns:
+  - "All Fire element cards with Saturn influence"
+  - "Court cards sharing Ni dominant function"
+  - "Decans corresponding to 7s across suits"
+- Visual results with exportable data
+
+**Essential Graph Query Examples:**
+
+```cypher
+// Get all correspondences for a card
+MATCH (c:TarotCard {name: $cardName})-[r]-(related)
+RETURN type(r) as relationship, 
+       labels(related) as type,
+       related.name as name,
+       r.context as context
+
+// Find paths between two symbols
+MATCH path = (a {name: $nameA})-[*1..4]-(b {name: $nameB})
+RETURN path
+LIMIT 20
+
+// Cards sharing an element AND planet
+MATCH (c1:TarotCard)-[:ELEMENTAL_ASSOCIATION]->(e:Element {name: $element})
+MATCH (c1)-[:RULED_BY_PLANET]->(p:HeavenlyBody {name: $planet})
+RETURN c1.name, c1.keywords
+```
+
+-----
+
+## Technical Stack Recommendations
+
+**Frontend:**
+
+- React + Vite + Tailwind + shadcn/ui (Paul’s preference)
+- Graph visualization: `react-force-graph` or `cytoscape.js`
+- Forms: React Hook Form + Zod validation
+- Date/time: `date-fns` or `luxon` (for astrology calculations)
+
+**API Layer:**
+
+- FastAPI (Python) - Paul’s stack
+- Neo4j driver: `neo4j` Python package
+- Endpoints needed:
+  - `GET /graph/node/{name}` - Get node + immediate connections
+  - `GET /graph/path?from={a}&to={b}&depth={n}` - Path finding
+  - `POST /readings` - Create reading
+  - `GET /readings` - List readings (with filters)
+  - `POST /charts` - Create astral chart
+  - `GET /charts` - List charts
+  - `GET /correspondences/{nodeType}/{nodeName}` - Full correspondence map
+
+**Database:**
+
+- Neo4j 5.x at `repository.robin-alligator.ts.net:7687`
+- Authentication: Credentials via env vars
+- Read-mostly workload with occasional writes (readings/charts)
+
+-----
+
+## UI/UX Priorities
+
+1. **Speed**: Graph queries under 100ms for single-node expansions
+1. **Clarity**: Relationship labels visible, context on hover
+1. **Depth control**: Don’t overwhelm--start shallow, allow expansion
+1. **Context preservation**: When exploring graph, maintain "where did I come from?"
+1. **Mobile-friendly**: Readings should be inputtable on phone/tablet
+1. **Export**: Readings/charts to Markdown or JSON
+
+-----
+
+## Immediate MVP Scope
+
+For initial build, prioritize:
+
+1. ✅ Graph exploration (node → connections, basic path finding)
+1. ✅ Tarot reading input & storage
+1. ✅ Reading library (list, detail, search by card)
+1. ⏳ Astral chart input (can be phase 2)
+1. ⏳ Advanced pattern search (phase 2)
+
+The core value is **bridging exploration** (traversing the pre-loaded correspondence graph) with **journal creation** (storing personal readings that reference those correspondences).
+
+-----
+
+Does this give Replit enough technical detail to build the interface? Any specific interaction patterns you want emphasized?​​​​​​​​​​​​​​​​
