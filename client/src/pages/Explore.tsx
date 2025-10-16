@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { GraphNode } from "@/components/GraphNode";
 import { PathDisplay } from "@/components/PathDisplay";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,9 @@ export default function Explore() {
   // Node search
   const nodeSearchMutation = useMutation({
     mutationFn: async (nodeName: string) => {
-      return await apiRequest(`/api/graph/node/${encodeURIComponent(nodeName)}`);
+      const response = await fetch(`/api/graph/node/${encodeURIComponent(nodeName)}`);
+      if (!response.ok) throw new Error("Failed to fetch node");
+      return response.json();
     },
     onSuccess: (data) => {
       if (!data.error) {
@@ -89,10 +91,13 @@ export default function Explore() {
   // Pattern search
   const patternSearchMutation = useMutation({
     mutationFn: async (pattern: any) => {
-      return await apiRequest("/api/graph/search", {
+      const response = await fetch("/api/graph/search", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pattern),
       });
+      if (!response.ok) throw new Error("Failed to search pattern");
+      return response.json();
     },
     onError: () => {
       toast({
@@ -124,7 +129,7 @@ export default function Explore() {
   };
 
   // Show connection error if Neo4j is not connected
-  if (statsError || graphStats?.error) {
+  if (statsError || (graphStats as any)?.error) {
     return (
       <div className="space-y-6">
         <div>
@@ -172,15 +177,15 @@ export default function Explore() {
       </div>
 
       {/* Graph Statistics */}
-      {graphStats && !graphStats.error && (
+      {graphStats && !(graphStats as any).error && (
         <div className="flex gap-4 text-sm">
           <Badge variant="secondary">
             <Network className="mr-1 h-3 w-3" />
-            {graphStats.nodeCount} nodes
+            {(graphStats as any).nodeCount} nodes
           </Badge>
           <Badge variant="secondary">
             <GitFork className="mr-1 h-3 w-3" />
-            {graphStats.relationshipCount} relationships
+            {(graphStats as any).relationshipCount} relationships
           </Badge>
         </div>
       )}
